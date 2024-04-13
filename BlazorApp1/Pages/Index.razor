@@ -3,49 +3,61 @@
 <PageTitle>Заказ пиццы</PageTitle>
 
 @functions {
-
-
     List<Pizza> Pizzas = new List<Pizza>
     {
-        new Pizza { Name = "Маргарита", Ingredients = "Томатный соус, моцарелла, базилик", Price = 300, ImageUrl = "https://www.allrecipes.com/thmb/fFW1o307WSqFFYQ3-QXYVpnFj6E=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/48727-Mikes-homemade-pizza-DDMFS-beauty-4x3-BG-2974-a7a9842c14e34ca699f3b7d7143256cf.jpg" },
-        new Pizza { Name = "Пепперони", Ingredients = "Томатный соус, моцарелла, пепперони", Price = 350, ImageUrl = "https://nightcity24.ru/d/picca_pepperoni.jpg" },
-        new Pizza { Name = "Гавайская", Ingredients = "Томатный соус, моцарелла, ветчина, ананасы", Price = 400, ImageUrl = "https://i06.fotocdn.net/s133/1ecffc93a5c8a660/public_pin_l/2981250553.jpg" },
+        new Pizza { Name = "Маргарита", Ingredients = "Традиционный рецепт пиццы с Моцареллой, сочными томатами, фирменным томатным соусом и орегано", Price = 300, ImageUrl = "https://cdn.papajohns.ru//images/catalog/thumbs/full/Margherita-traditional.webp" },
+        new Pizza { Name = "Хот Пепперони", Ingredients = "Еще горячее! Американская классика с пикантной пепперони, Моцареллой и фирменным томатным соусом с острым халапеньо . С пикантной остринкой", Price = 350, ImageUrl = "https://cdn.papajohns.ru//images/catalog/thumbs/full/c47375a1c761d2e80ecf6a5c9e636115.webp" },
+        new Pizza { Name = "Гавайская", Ingredients = "Томатный соус, моцарелла, ветчина, ананасы", Price = 400, ImageUrl = "https://cdn.papajohns.ru//images/catalog/thumbs/full/6471a5bdc54708c5fb2595b6e17703c1.webp" },
         new Pizza { Name = "Четыре сыра", Ingredients = "Белый соус, моцарелла, горгонзола, пармезан, фета", Price = 380, ImageUrl = "https://static.tildacdn.com/stor6266-6239-4139-b131-393231656466/90266674.jpg" },
         new Pizza { Name = "Вегетарианская", Ingredients = "Томатный соус, моцарелла, оливки, перец, грибы, лук", Price = 370, ImageUrl = "https://inteq-bau.ru/wp-content/uploads/a/3/7/a3785384a770a31bbcf1a9b0c14aa9d3.jpeg" },
-        new Pizza { Name = "Мясная", Ingredients = "Томатный соус, моцарелла, говядина, свинина, курица, пепперони", Price = 420, ImageUrl = "https://sun6-22.userapi.com/impg/1yTW6V_ZtWzZN85cyGJuYfzbHYjGmXKpJ3QYAw/upGVml9VV2w.jpg?size=1280x771&quality=95&sign=2d886de93de576ff19d3832bd3c14352&c_uniq_tag=61OuQVGLYRiFOYaJut5Hhcnl0PgCUk7WrAV9btEQvIw&type=album" }
+        new Pizza { Name = "Мясная", Ingredients = "Томатный соус, моцарелла, говядина, свинина, курица, пепперони", Price = 420, ImageUrl = "https://sun6-22.userapi.com/impg/1yTW6V_ZtWzZN85cyGJuYfzbHYjGmXKpJ3QYAw/upGVml9VV2w.jpg?size=1280x771&quality=95&sign=2d886de93de576ff19d3832bd3c14352&c_uniq_tag=61OuQVGLYRiFOYaJut5Hhcnl0PgCUk7WrAV9btEQvIw" }
     };
 
-    List<Pizza> ShoppingCart = new List<Pizza>();
+    List<PizzaOrder> ShoppingCart = new List<PizzaOrder>();
 
-    double AccountBalance = 1000;
+    double AccountBalance = 5000;
     double TotalPrice = 0;
 
     void AddToCart(Pizza pizza)
     {
-        ShoppingCart.Add(pizza);
-        TotalPrice += pizza.Price;
+        var existingOrder = ShoppingCart.FirstOrDefault(po => po.Pizza.Name == pizza.Name);
+        if (existingOrder != null)
+        {
+            existingOrder.Quantity++;
+            TotalPrice += pizza.Price;
+        }
+        else
+        {
+            ShoppingCart.Add(new PizzaOrder { Pizza = pizza, Quantity = 1 });
+            TotalPrice += pizza.Price;
+        }
     }
 
-    void RemoveFromCart(Pizza pizza)
+    void RemoveFromCart(PizzaOrder pizzaOrder)
     {
-        ShoppingCart.Remove(pizza);
-        TotalPrice -= pizza.Price;
+        if (pizzaOrder.Quantity > 1)
+        {
+            pizzaOrder.Quantity--;
+            TotalPrice -= pizzaOrder.Pizza.Price;
+        }
+        else
+        {
+            ShoppingCart.Remove(pizzaOrder);
+            TotalPrice -= pizzaOrder.Pizza.Price;
+        }
     }
 
     async Task Order()
     {
         if (TotalPrice > AccountBalance)
         {
-            // Если общая стоимость заказа больше баланса, показываем сообщение об ошибке
             Console.WriteLine("Недостаточно средств на счету!");
             return;
         }
 
-        // Имитация оформления заказа и списания денег
         Console.WriteLine("Заказ оформлен!");
         AccountBalance -= TotalPrice;
 
-        // Очистка корзины и сброс общей стоимости
         ShoppingCart.Clear();
         TotalPrice = 0;
     }
@@ -62,14 +74,21 @@
                     <h5 class="card-title">@pizza.Name</h5>
                     <p class="card-text">@pizza.Ingredients</p>
                     <p class="card-text">Цена: @pizza.Price рублей</p>
-                    @if (ShoppingCart.Contains(pizza))
-                    {
-                        <button class="btn btn-danger" @onclick="() => RemoveFromCart(pizza)">Удалить из корзины</button>
-                    }
-                    else
-                    {
-                        <button class="btn btn-primary" @onclick="() => AddToCart(pizza)">Добавить в корзину</button>
-                    }
+                    <div>
+                        @if (ShoppingCart.Any(po => po.Pizza.Name == pizza.Name))
+                        {
+                            var pizzaOrder = ShoppingCart.First(po => po.Pizza.Name == pizza.Name);
+                            <div>
+                                <button class="btn btn-secondary" @onclick="() => RemoveFromCart(pizzaOrder)">-</button>
+                                <span>@pizzaOrder.Quantity</span>
+                                <button class="btn btn-secondary" @onclick="() => AddToCart(pizza)">+</button>
+                            </div>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary" @onclick="() => AddToCart(pizza)">Добавить в корзину</button>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -82,6 +101,16 @@
         <h4>Общая стоимость: @TotalPrice рублей</h4>
         <button class="btn btn-success" @onclick="Order">Заказать</button>
     </div>
+
+    <div>
+        <h5>Выбранные пиццы:</h5>
+        <ul>
+            @foreach (var order in ShoppingCart)
+            {
+                <li>@order.Pizza.Name - @order.Quantity шт.</li>
+            }
+        </ul>
+    </div>
 }
 
 @code {
@@ -91,5 +120,11 @@
         public string Ingredients { get; set; }
         public double Price { get; set; }
         public string ImageUrl { get; set; }
+    }
+
+    public class PizzaOrder
+    {
+        public Pizza Pizza { get; set; }
+        public int Quantity { get; set; }
     }
 }
