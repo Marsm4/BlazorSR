@@ -3,6 +3,8 @@
 <PageTitle>Заказ пиццы</PageTitle>
 
 @functions {
+
+
     List<Pizza> Pizzas = new List<Pizza>
     {
         new Pizza { Name = "Маргарита", Ingredients = "Томатный соус, моцарелла, базилик", Price = 300, ImageUrl = "https://www.allrecipes.com/thmb/fFW1o307WSqFFYQ3-QXYVpnFj6E=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/48727-Mikes-homemade-pizza-DDMFS-beauty-4x3-BG-2974-a7a9842c14e34ca699f3b7d7143256cf.jpg" },
@@ -14,6 +16,8 @@
     };
 
     List<Pizza> ShoppingCart = new List<Pizza>();
+
+    double AccountBalance = 1000;
     double TotalPrice = 0;
 
     void AddToCart(Pizza pizza)
@@ -28,17 +32,27 @@
         TotalPrice -= pizza.Price;
     }
 
-    void Order()
+    async Task Order()
     {
-        // Здесь можно добавить логику для оформления заказа, списания денег и т.д.
-        // В данном примере просто очищаем корзину
+        if (TotalPrice > AccountBalance)
+        {
+            // Если общая стоимость заказа больше баланса, показываем сообщение об ошибке
+            Console.WriteLine("Недостаточно средств на счету!");
+            return;
+        }
+
+        // Имитация оформления заказа и списания денег
+        Console.WriteLine("Заказ оформлен!");
+        AccountBalance -= TotalPrice;
+
+        // Очистка корзины и сброс общей стоимости
         ShoppingCart.Clear();
         TotalPrice = 0;
-        // Добавить код для оформления заказа
     }
 }
 
 <div class="row">
+    <h4>Баланс на счету: @AccountBalance рублей</h4>
     @foreach (var pizza in Pizzas)
     {
         <div class="col-sm-6">
