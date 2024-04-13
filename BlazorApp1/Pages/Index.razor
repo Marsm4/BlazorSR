@@ -1,19 +1,81 @@
 ﻿@page "/"
 
-<PageTitle>Index</PageTitle>
+<PageTitle>Заказ пиццы</PageTitle>
+
+@functions {
+    List<Pizza> Pizzas = new List<Pizza>
+    {
+        new Pizza { Name = "Маргарита", Ingredients = "Томатный соус, моцарелла, базилик", Price = 300, ImageUrl = "https://www.allrecipes.com/thmb/fFW1o307WSqFFYQ3-QXYVpnFj6E=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/48727-Mikes-homemade-pizza-DDMFS-beauty-4x3-BG-2974-a7a9842c14e34ca699f3b7d7143256cf.jpg" },
+        new Pizza { Name = "Пепперони", Ingredients = "Томатный соус, моцарелла, пепперони", Price = 350, ImageUrl = "https://nightcity24.ru/d/picca_pepperoni.jpg" },
+        new Pizza { Name = "Гавайская", Ingredients = "Томатный соус, моцарелла, ветчина, ананасы", Price = 400, ImageUrl = "https://i06.fotocdn.net/s133/1ecffc93a5c8a660/public_pin_l/2981250553.jpg" },
+        new Pizza { Name = "Четыре сыра", Ingredients = "Белый соус, моцарелла, горгонзола, пармезан, фета", Price = 380, ImageUrl = "https://static.tildacdn.com/stor6266-6239-4139-b131-393231656466/90266674.jpg" },
+        new Pizza { Name = "Вегетарианская", Ingredients = "Томатный соус, моцарелла, оливки, перец, грибы, лук", Price = 370, ImageUrl = "https://inteq-bau.ru/wp-content/uploads/a/3/7/a3785384a770a31bbcf1a9b0c14aa9d3.jpeg" },
+        new Pizza { Name = "Мясная", Ingredients = "Томатный соус, моцарелла, говядина, свинина, курица, пепперони", Price = 420, ImageUrl = "https://sun6-22.userapi.com/impg/1yTW6V_ZtWzZN85cyGJuYfzbHYjGmXKpJ3QYAw/upGVml9VV2w.jpg?size=1280x771&quality=95&sign=2d886de93de576ff19d3832bd3c14352&c_uniq_tag=61OuQVGLYRiFOYaJut5Hhcnl0PgCUk7WrAV9btEQvIw&type=album" }
+    };
+
+    List<Pizza> ShoppingCart = new List<Pizza>();
+    double TotalPrice = 0;
+
+    void AddToCart(Pizza pizza)
+    {
+        ShoppingCart.Add(pizza);
+        TotalPrice += pizza.Price;
+    }
+
+    void RemoveFromCart(Pizza pizza)
+    {
+        ShoppingCart.Remove(pizza);
+        TotalPrice -= pizza.Price;
+    }
+
+    void Order()
+    {
+        // Здесь можно добавить логику для оформления заказа, списания денег и т.д.
+        // В данном примере просто очищаем корзину
+        ShoppingCart.Clear();
+        TotalPrice = 0;
+        // Добавить код для оформления заказа
+    }
+}
 
 <div class="row">
-  @for(int i = 0; i < 4; i++)
-  {
-      <div class="col-sm-6">
-        <div class="card" style="width: 18rem;">
-              <img class="card-img-top" src="https://www.allrecipes.com/thmb/fFW1o307WSqFFYQ3-QXYVpnFj6E=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/48727-Mikes-homemade-pizza-DDMFS-beauty-4x3-BG-2974-a7a9842c14e34ca699f3b7d7143256cf.jpg" alt="Card image cap">
-              <div class="card-body">
-                <h5 class="card-title">Card title</h5>
-                <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-                <a href="#" class="btn btn-primary">Go somewhere</a>
-              </div>
+    @foreach (var pizza in Pizzas)
+    {
+        <div class="col-sm-6">
+            <div class="card" style="width: 18rem; margin-bottom: 20px;">
+                <img class="card-img-top" src="@pizza.ImageUrl" alt="Card image cap">
+                <div class="card-body">
+                    <h5 class="card-title">@pizza.Name</h5>
+                    <p class="card-text">@pizza.Ingredients</p>
+                    <p class="card-text">Цена: @pizza.Price рублей</p>
+                    @if (ShoppingCart.Contains(pizza))
+                    {
+                        <button class="btn btn-danger" @onclick="() => RemoveFromCart(pizza)">Удалить из корзины</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-primary" @onclick="() => AddToCart(pizza)">Добавить в корзину</button>
+                    }
+                </div>
+            </div>
         </div>
-  </div>
-  }
+    }
 </div>
+
+@if (ShoppingCart.Count > 0)
+{
+    <div>
+        <h4>Общая стоимость: @TotalPrice рублей</h4>
+        <button class="btn btn-success" @onclick="Order">Заказать</button>
+    </div>
+}
+
+@code {
+    public class Pizza
+    {
+        public string Name { get; set; }
+        public string Ingredients { get; set; }
+        public double Price { get; set; }
+        public string ImageUrl { get; set; }
+    }
+}
